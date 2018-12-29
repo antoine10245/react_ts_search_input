@@ -1,18 +1,91 @@
 import * as React from "react";
-import "./App.css";
+import styled from "styled-components";
+import { DebounceInput } from "react-debounce-input";
+import * as _ from "lodash";
+import {
+  SearchInterface,
+  ArtistInterface,
+  EventsInterface
+} from "./interfaces/App.interfaces";
 
-import logo from "./logo.svg";
-import { Search } from "./SearchInput.component";
+import Header from "./components/common/Header.component";
+import ArtistCard from "./components/ArtistCard.component";
+import EventsTable from "./components/EventsTable.component";
 
-class App extends React.Component {
-  public render() {
+const Wrapper = styled.div``;
+const SearchInput = styled.div``;
+const Row = styled.div``;
+
+const API = "https://rest.bandsintown.com/artists/";
+const APP_ID = "123123";
+const ENTER_KEY = 13;
+class App extends React.Component<{}, SearchInterface> {
+  state: SearchInterface = {
+    artistName: "",
+    artist: {} as ArtistInterface,
+    artistEvents: [] as EventsInterface
+  };
+
+  getDataByArtistName = () => {
+    if (this.state.artistName) {
+      Promise.all([this.getArtist(), this.getArtistEvents()]).then(response => {
+        if (response) {
+          this.setState({
+            artist: response[0],
+            artistEvents: response[1]
+          });
+        }
+      });
+    }
+  };
+
+  getArtist = async () => {
+    return fetch(`${API}${this.state.artistName}/?app_id=${APP_ID}`)
+      .then(response => response.json())
+      .then(data => data)
+      .catch(error => error);
+  };
+
+  getArtistEvents = async () => {
+    return fetch(`${API}${this.state.artistName}/events/?app_id=${APP_ID}`)
+      .then(response => response.json())
+      .then(data => data)
+      .catch(error => error);
+  };
+
+  handleInputChange = (event: any) => {
+    this.setState({ artistName: event.target.value }, this.getDataByArtistName);
+  };
+
+  handleKeyDown(event: any) {
+    if (event.key === ENTER_KEY) {
+      this.getDataByArtistName();
+    }
+  }
+
+  render() {
     return (
       <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Home 24 - test</h1>
-        </header>
-        <Search />
+        <Header />
+        <Wrapper className="container-fluid">
+          <SearchInput className="form-group col-sm-12 col-xl-3 pt-4 p-0">
+            <DebounceInput
+              className="form-control"
+              placeholder="Enter artist name"
+              onChange={this.handleInputChange}
+              onKeyDown={this.handleKeyDown}
+              minLength={1}
+              debounceTimeout={500}
+              value={this.state.artistName}
+            />
+          </SearchInput>
+          {!_.isEmpty(this.state.artist) && (
+            <Row className="row">
+              <ArtistCard artist={this.state.artist} />
+              <EventsTable events={this.state.artistEvents} />
+            </Row>
+          )}
+        </Wrapper>
       </div>
     );
   }
