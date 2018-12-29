@@ -15,8 +15,18 @@ const mockArtist = {
 };
 
 describe("ArtistCard component", () => {
+  const subject = shallow(<ArtistCard artist={mockArtist} />);
   it("renders without crashing", () => {
-    const subject = shallow(<ArtistCard artist={mockArtist} />);
     expect(subject).toMatchSnapshot();
+  });
+
+  it("display the required informations", () => {
+    expect(subject.find("h5").html()).toEqual(
+      '<h5 class="card-title">hallo</h5>'
+    );
+    expect(subject.find("p").html()).toEqual('<p class="card-text">hallo</p>');
+    expect(subject.find("a").html()).toEqual(
+      '<a href="hallo" class="btn btn-primary">Go to facebook</a>'
+    );
   });
 });

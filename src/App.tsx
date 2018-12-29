@@ -22,8 +22,9 @@ const ENTER_KEY = 13;
 class App extends React.Component<{}, SearchInterface> {
   state: SearchInterface = {
     artistName: "",
-    artist: {} as ArtistInterface,
-    artistEvents: [] as EventsInterface
+    artist: null as ArtistInterface,
+    artistEvents: null as EventsInterface,
+    noResult: null
   };
 
   getDataByArtistName = () => {
@@ -31,6 +32,7 @@ class App extends React.Component<{}, SearchInterface> {
       Promise.all([this.getArtist(), this.getArtistEvents()]).then(response => {
         if (response) {
           this.setState({
+            noResult: _.isEmpty(response[0]),
             artist: response[0],
             artistEvents: response[1]
           });
@@ -79,11 +81,16 @@ class App extends React.Component<{}, SearchInterface> {
               value={this.state.artistName}
             />
           </SearchInput>
+
           {!_.isEmpty(this.state.artist) && (
             <Row className="row">
               <ArtistCard artist={this.state.artist} />
               <EventsTable events={this.state.artistEvents} />
             </Row>
+          )}
+
+          {this.state.noResult && (
+            <h2 className="alert-light text-center">No Artist Found</h2>
           )}
         </Wrapper>
       </div>

@@ -2,6 +2,7 @@ export interface SearchInterface {
   artistName: string;
   artist: ArtistInterface;
   artistEvents: EventsInterface;
+  noResult: boolean;
 }
 
 export interface ArtistInterface {
